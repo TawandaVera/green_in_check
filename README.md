@@ -2,7 +2,7 @@
 ## Overview
 Green in Check is an advanced ESG intelligence system designed to detect greenwashing, validate sustainability claims, and provide strategic guidance on environmental, social, and governance practices. This custom GPT leverages AI technology to deliver data-driven insights for various stakeholders navigating the complex landscape of corporate sustainability.
 
-## Access the GPT: [Green in Check] (https://chatgpt.com/g/g-67e8b27a5a5481918d082bc25294d6c3-green-in-check-esg-intelligence-advisor)
+## Access the GPT: [Green in Check](https://chatgpt.com/g/g-67e8b27a5a5481918d082bc25294d6c3-green-in-check-esg-intelligence-advisor)
 ## Key Features
 
 Greenwashing Detection: Analyzes language patterns, claims specificity, and evidence quality to identify potential greenwashing in corporate communications
