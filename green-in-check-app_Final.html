@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green in Check - ESG Intelligence Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .active-tab {
+            display: block;
+        }
+        .nav-item.active {
+            border-bottom: 3px solid #10B981;
+            color: #10B981;
+        }
+        .result-card {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .result-card.show {
+            max-height: 2000px;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #10B981;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <button id="quickAnalyzeButton">Quick Analyze</button>
+    <div id="quickAnalysisResults">Quick Analysis Results:</div>
+    <style>
+        #quickAnalysisResults {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 150px; /* Increased height for better visibility */
+            width: 100%; /* Ensure full width */
+            background-color: #f9f9f9; /* Light background for readability */
+            overflow-y: auto; /* Allow scrolling if needed */
+            font-family: Arial, sans-serif; /* Consistent font style */
+        }
+    </style>
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-leaf text-green-500 text-2xl mr-2"></i>
+                <h1 class="text-xl font-bold text-gray-800">Green in Check</h1>
+            </div>
+            <div>
+                <button id="helpBtn" class="text-gray-600 hover:text-green-500 mr-3">
+                    <i class="fas fa-question-circle"></i>
+                </button>
+                <button id="userBtn" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                    <i class="fas fa-user mr-1"></i> Login
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white shadow-sm">
+        <div class="container mx-auto px-4">
+            <ul class="flex overflow-x-auto">
+                <li class="nav-item active px-4 py-3 font-medium text-gray-700 cursor-pointer" data-target="home">
+                    <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                </li>
+                <li class="nav-item px-4 py-3 font-medium text-gray-700 cursor-pointer" data-target="rating">
+                    <i class="fas fa-star mr-1"></i> ESG Rating Lookup
+                </li>
+                <li class="nav-item px-4 py-3 font-medium text-gray-700 cursor-pointer" data-target="calculator">
+                    <i class="fas fa-calculator mr-1"></i> Carbon Calculator
+                </li>
+                <li class="nav-item px-4 py-3 font-medium text-gray-700 cursor-pointer" data-target="analyzer">
+                    <i class="fas fa-file-alt mr-1"></i> Report Analyzer
+                </li>
+                <li class="nav-item px-4 py-3 font-medium text-gray-700 cursor-pointer" data-target="compliance">
+                    <i class="fas fa-check-circle mr-1"></i> Compliance Checker
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- Home/Dashboard Tab -->
+        <div id="home" class="tab-content active-tab">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Welcome to Green in Check</h2>
+                <p class="text-gray-600 mb-4">Your advanced ESG intelligence platform for sustainability analysis and greenwashing detection.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div class="bg-green-50 rounded-lg p-5 border border-green-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                            <i class="fas fa-search text-green-500 mr-2"></i> Quick Analysis
+                        </h3>
+                        <p class="text-gray-600 mb-4">Analyze any sustainability claim for potential greenwashing.</p>
+                        <div class="relative">
+                            <textarea id="quickClaimInput" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" rows="3" placeholder="Paste a sustainability claim here..."></textarea>
+                            <button id="quickAnalyzeBtn" class="mt-3 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center">
+                                <i class="fas fa-bolt mr-2"></i> Quick Analyze
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-5 border border-blue-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">
+                            <i class="fas fa-chart-line text-blue-500 mr-2"></i> Recent Activity
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-file-alt text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700 font-medium">Report Analysis</p>
+                                    <p class="text-gray-500 text-sm">Company X Sustainability Report</p>
+                                    <p class="text-gray-400 text-xs">Today, 10:30 AM</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-green-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-calculator text-green-500"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700 font-medium">Carbon Calculation</p>
+                                    <p class="text-gray-500 text-sm">Office Operations - Q2</p>
+                                    <p class="text-gray-400 text-xs">Yesterday, 2:15 PM</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Explore Our Tools</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-white rounded-lg shadow p-5 border-t-4 border-yellow-400 hover:shadow-lg transition duration-300">
+                            <h4 class="font-semibold text-gray-800">ESG Rating Lookup</h4>
+                            <p class="text-gray-600 text-sm mt-2">Compare ESG ratings from multiple providers</p>
+                            <button class="mt-3 text-yellow-600 hover:text-yellow-800 text-sm font-medium" data-navigate="rating">
+                                Explore <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-5 border-t-4 border-green-400 hover:shadow-lg transition duration-300">
+                            <h4 class="font-semibold text-gray-800">Carbon Footprint Calculator</h4>
+                            <p class="text-gray-600 text-sm mt-2">Estimate emissions from business activities</p>
+                            <button class="mt-3 text-green-600 hover:text-green-800 text-sm font-medium" data-navigate="calculator">
+                                Explore <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-5 border-t-4 border-blue-400 hover:shadow-lg transition duration-300">
+                            <h4 class="font-semibold text-gray-800">Sustainability Report Analyzer</h4>
+                            <p class="text-gray-600 text-sm mt-2">Detect greenwashing in company reports</p>
+                            <button class="mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium" data-navigate="analyzer">
+                                Explore <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-5 border-t-4 border-purple-400 hover:shadow-lg transition duration-300">
+                            <h4 class="font-semibold text-gray-800">Compliance Checker</h4>
+                            <p class="text-gray-600 text-sm mt-2">Verify claims against regional regulations</p>
+                            <button class="mt-3 text-purple-600 hover:text-purple-800 text-sm font-medium" data-navigate="compliance">
+                                Explore <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Analysis Results Area -->
+            <div id="quickAnalysisResults" class="result-card bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-search-plus text-green-500 mr-2"></i> Quick Analysis Results
+                </h3>
+                <div class="loader" id="quickAnalysisLoader"></div>
+                <div id="quickAnalysisContent"></div>
+            </div>
+        </div>
+
+        <!-- ESG Rating Lookup Tab -->
+        <div id="rating" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">ESG Rating Lookup</h2>
+                <p class="text-gray-600 mb-6">Compare ESG ratings and sustainability performance metrics from multiple providers.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <label for="companyName" class="block text-gray-700 font-medium mb-2">Company Name</label>
+                        <input type="text" id="companyName" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500" placeholder="e.g., Apple Inc., Tesla, Unilever">
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">Rating Categories</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">Environmental</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">Social</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">Governance</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">Rating Providers</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">MSCI</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">Sustainalytics</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500" checked>
+                                    <span class="ml-2">S&P Global</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500">
+                                    <span class="ml-2">Bloomberg ESG</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-yellow-500">
+                                    <span class="ml-2">CDP</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 rounded-lg p-5 border border-yellow-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Why Compare Ratings?</h3>
+                        <p class="text-gray-600 text-sm mb-3">ESG ratings can vary significantly between providers due to:</p>
+                        <ul class="text-gray-600 text-sm space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>Different methodologies and scoring systems</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>Varying data sources and quality</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-yellow-500 mt-1 mr-2"></i>
+                                <span>Subjective weightings of ESG factors</span>
+                            </li>
+                        </ul>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i> Comparing multiple sources provides a more complete picture of a company's true ESG performance.
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="lookupBtn" class="mt-6 px-6 py-3 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 flex items-center">
+                    <i class="fas fa-search mr-2"></i> Lookup ESG Ratings
+                </button>
+            </div>
+            
+            <!-- ESG Rating Results Area -->
+            <div id="ratingResults" class="result-card bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-bar text-yellow-500 mr-2"></i> ESG Rating Results
+                </h3>
+                <div class="loader" id="ratingLoader"></div>
+                <div id="ratingContent"></div>
+            </div>
+        </div>
+
+        <!-- Carbon Footprint Calculator Tab -->
+        <div id="calculator" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Carbon Footprint Calculator</h2>
+                <p class="text-gray-600 mb-6">Estimate greenhouse gas emissions from business activities and operations.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <div class="mb-4">
+                            <label for="businessType" class="block text-gray-700 font-medium mb-2">Business Type</label>
+                            <select id="businessType" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Select business type...</option>
+                                <option value="office">Office-based Business</option>
+                                <option value="retail">Retail</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="logistics">Transportation & Logistics</option>
+                                <option value="technology">Technology</option>
+                                <option value="hospitality">Hospitality</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="region" class="block text-gray-700 font-medium mb-2">Region</label>
+                            <select id="region" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                                <option value="">Select region...</option>
+                                <option value="namerica">North America</option>
+                                <option value="europe">Europe</option>
+                                <option value="asia">Asia-Pacific</option>
+                                <option value="lamerica">Latin America</option>
+                                <option value="africa">Africa & Middle East</option>
+                            </select>
+                        </div>
+                        
+                        <div id="activityInputs" class="space-y-4 mt-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Activity Data</h3>
+                            
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-gray-700 font-medium">Electricity Usage</label>
+                                    <button class="text-sm text-green-600 hover:text-green-800">
+                                        <i class="fas fa-question-circle"></i> Help
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <input type="number" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Amount">
+                                    </div>
+                                    <div>
+                                        <select class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
+                                            <option value="kwh">kWh</option>
+                                            <option value="mwh">MWh</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-gray-700 font-medium">Natural Gas</label>
+                                    <button class="text-sm text-green-600 hover:text-green-800">
+                                        <i class="fas fa-question-circle"></i> Help
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <input type="number" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Amount">
+                                    </div>
+                                    <div>
+                                        <select class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
+                                            <option value="therms">Therms</option>
+                                            <option value="mmbtu">MMBtu</option>
+                                            <option value="m3">m³</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded-md">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-gray-700 font-medium">Business Travel</label>
+                                    <button class="text-sm text-green-600 hover:text-green-800">
+                                        <i class="fas fa-question-circle"></i> Help
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <input type="number" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Amount">
+                                    </div>
+                                    <div>
+                                        <select class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
+                                            <option value="miles">Miles</option>
+                                            <option value="km">Kilometers</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <select class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
+                                        <option value="">Select travel type...</option>
+                                        <option value="air">Air Travel</option>
+                                        <option value="car">Car Travel</option>
+                                        <option value="train">Rail Travel</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <button id="addActivityBtn" class="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 text-sm">
+                                    <i class="fas fa-plus mr-1"></i> Add Activity
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 rounded-lg p-5 border border-green-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Emission Scopes</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <h4 class="font-medium text-gray-700">Scope 1</h4>
+                                <p class="text-gray-600 text-sm">Direct emissions from owned or controlled sources (e.g., fuel combustion, company vehicles)</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700">Scope 2</h4>
+                                <p class="text-gray-600 text-sm">Indirect emissions from purchased electricity, steam, heating, and cooling</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700">Scope 3</h4>
+                                <p class="text-gray-600 text-sm">All other indirect emissions in a company's value chain (e.g., business travel, waste, purchased goods)</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-green-200">
+                            <label class="block text-gray-700 font-medium mb-2">Include Scopes</label>
+                            <div class="space-y-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-green-500" checked>
+                                    <span class="ml-2">Scope 1</span>
+                                </label>
+                                <br>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-green-500" checked>
+                                    <span class="ml-2">Scope 2</span>
+                                </label>
+                                <br>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-green-500" checked>
+                                    <span class="ml-2">Scope 3</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="calculateBtn" class="mt-6 px-6 py-3 bg-green-500 text-white rounded-md hover:bg-green-600 flex items-center">
+                    <i class="fas fa-calculator mr-2"></i> Calculate Carbon Footprint
+                </button>
+            </div>
+            
+            <!-- Carbon Calculation Results Area -->
+            <div id="calculationResults" class="result-card bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-chart-pie text-green-500 mr-2"></i> Carbon Footprint Results
+                </h3>
+                <div class="loader" id="calculationLoader"></div>
+                <div id="calculationContent"></div>
+            </div>
+        </div>
+
+        <!-- Sustainability Report Analyzer Tab -->
+        <div id="analyzer" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Sustainability Report Analyzer</h2>
+                <p class="text-gray-600 mb-6">Detect potential greenwashing in corporate sustainability reports and ESG disclosures.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <div class="mb-6 p-5 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50 text-center">
+                            <i class="fas fa-file-upload text-blue-400 text-4xl mb-3"></i>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Upload Sustainability Report</h3>
+                            <p class="text-gray-600 text-sm mb-3">Drag and drop your file here, or click to browse</p>
+                            <p class="text-gray-500 text-xs">Supported formats: PDF, DOCX, XLSX (Max 20MB)</p>
+                            <input type="file" id="reportUpload" class="hidden">
+                            <button id="uploadBtn" class="mt-3 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                                <i class="fas fa-upload mr-2"></i> Select File
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <label for="reportURL" class="block text-gray-700 font-medium mb-2">Or Enter Report URL</label>
+                            <input type="text" id="reportURL" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://company.com/sustainability-report.pdf">
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="companyName2" class="block text-gray-700 font-medium mb-2">Company Name</label>
+                            <input type="text" id="companyName2" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., Apple Inc., Tesla, Unilever">
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="reportYear" class="block text-gray-700 font-medium mb-2">Report Year</label>
+                            <select id="reportYear" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="2025">2025</option>
+                                <option value="2024" selected>2024</option>
+                                <option value="2023">2023</option>
+                                <option value="2022">2022</option>
+                                <option value="2021">2021</option>
+                                <option value="2020">2020</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">Analysis Focus Areas</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Climate Claims</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Emissions Reporting</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Goal Setting</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Language Analysis</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Data Verification</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-blue-500" checked>
+                                    <span class="ml-2">Visual Elements</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="analysisDepth" class="block text-gray-700 font-medium mb-2">Analysis Depth</label>
+                            <select id="analysisDepth" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="basic">Basic - Quick overview (1-2 minutes)</option>
+                                <option value="standard" selected>Standard - Comprehensive analysis (3-5 minutes)</option>
+                                <option value="deep">Deep - Detailed examination (7-10 minutes)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-lg p-5 border border-blue-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">About the Analyzer</h3>
+                        <p class="text-gray-600 text-sm mb-3">Our report analyzer uses advanced AI to detect potential greenwashing tactics such as:</p>
+                        <ul class="text-gray-600 text-sm space-y-2">
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-2"></i>
+                                <span>Vague terminology without clear definitions</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-2"></i>
+                                <span>Selective disclosure of positive metrics</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-2"></i>
+                                <span>Hidden trade-offs between different impacts</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-2"></i>
+                                <span>Unverified claims without evidence</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-exclamation-triangle text-amber-500 mt-1 mr-2"></i>
+                                <span>Irrelevant environmental claims</span>
+                            </li>
+                        </ul>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <i class="fas fa-shield-alt mr-1"></i> All uploads are securely processed and not stored longer than necessary for analysis.
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="analyzeBtn" class="mt-6 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center">
+                    <i class="fas fa-search-plus mr-2"></i> Analyze Report
+                </button>
+            </div>
+            
+            <!-- Report Analysis Results Area -->
+            <div id="analysisResults" class="result-card bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-file-alt text-blue-500 mr-2"></i> Report Analysis Results
+                </h3>
+                <div class="loader" id="analysisLoader"></div>
+                <div id="analysisContent"></div>
+            </div>
+        </div>
+
+        <!-- Regulatory Compliance Checker Tab -->
+        <div id="compliance" class="tab-content">
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Regulatory Compliance Checker</h2>
+                <p class="text-gray-600 mb-6">Verify if sustainability claims comply with regulations in specific regions and industries.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <div>
+                            <label for="claimText" class="block text-gray-700 font-medium mb-2">Sustainability Claim</label>
+                            <textarea id="claimText" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" rows="4" placeholder="Paste the sustainability claim or marketing statement you want to check..."></textarea>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="productType" class="block text-gray-700 font-medium mb-2">Product/Service Type</label>
+                            <input type="text" id="productType" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., Clothing, Food Product, Financial Service">
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label for="industry" class="block text-gray-700 font-medium mb-2">Industry</label>
+                            <select id="industry" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                <option value="">Select industry...</option>
+                                <option value="consumer">Consumer Goods</option>
+                                <option value="food">Food & Beverage</option>
+                                <option value="fashion">Fashion & Apparel</option>
+                                <option value="energy">Energy</option>
+                                <option value="finance">Financial Services</option>
+                                <option value="tech">Technology</option>
+                                <option value="transport">Transportation</option>
+                                <option value="construction">Construction & Real Estate</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">Region(s) for Compliance Check</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500" checked>
+                                    <span class="ml-2">European Union</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500" checked>
+                                    <span class="ml-2">United States</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">United Kingdom</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">Canada</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">Australia</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">Other</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <label class="block text-gray-700 font-medium mb-2">Specific Regulations to Check</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500" checked>
+                                    <span class="ml-2">EU Green Claims Directive</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500" checked>
+                                    <span class="ml-2">FTC Green Guides (US)</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">UK Green Claims Code</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" class="form-checkbox text-purple-500">
+                                    <span class="ml-2">ISO 14021 Standards</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-purple-50 rounded-lg p-5 border border-purple-100">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Key Regulations</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <h4 class="font-medium text-gray-700">EU Green Claims Directive</h4>
+                                <p class="text-gray-600 text-sm">Requires claims to be substantiated with scientific evidence. Bans vague claims like "eco-friendly" without specifics.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700">FTC Green Guides (US)</h4>
+                                <p class="text-gray-600 text-sm">Guidelines on avoiding deceptive environmental marketing claims, with specific sections on certifications, carbon offsets, and recyclability.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700">UK Green Claims Code</h4>
+                                <p class="text-gray-600 text-sm">Six principles including accuracy, clarity, substantiation, and fair comparisons for environmental claims.</p>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i> Compliance checks are based on current regulations and are for guidance only. They do not constitute legal advice.
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="checkBtn" class="mt-6 px-6 py-3 bg-purple-500 text-white rounded-md hover:bg-purple-600 flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i> Check Compliance
+                </button>
+            </div>
+            
+            <!-- Compliance Check Results Area -->
+            <div id="complianceResults" class="result-card bg-white rounded-lg shadow-md p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-balance-scale text-purple-500 mr-2"></i> Compliance Check Results
+                </h3>
+                <div class="loader" id="complianceLoader"></div>
+                <div id="complianceContent"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Green in Check</h3>
+                    <p class="text-gray-400 text-sm">Advanced ESG intelligence for transparent sustainability.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Features</h3>
+                    <ul class="text-gray-400 text-sm space-y-2">
+                        <li><a href="#" class="hover:text-green-300">ESG Rating Lookup</a></li>
+                        <li><a href="#" class="hover:text-green-300">Carbon Calculator</a></li>
+                        <li><a href="#" class="hover:text-green-300">Report Analyzer</a></li>
+                        <li><a href="#" class="hover:text-green-300">Compliance Checker</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Resources</h3>
+                    <ul class="text-gray-400 text-sm space-y-2">
+                        <li><a href="#" class="hover:text-green-300">Greenwashing Guide</a></li>
+                        <li><a href="#" class="hover:text-green-300">ESG Glossary</a></li>
+                        <li><a href="#" class="hover:text-green-300">Regulatory Updates</a></li>
+                        <li><a href="#" class="hover:text-green-300">Blog</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-3">Connect</h3>
+                    <ul class="text-gray-400 text-sm space-y-2">
+                        <li><a href="#" class="hover:text-green-300">Contact Us</a></li>
+                        <li><a href="#" class="hover:text-green-300">About</a></li>
+                        <li><a href="#" class="hover:text-green-300">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-green-300">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-4 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">© 2025 Green in Check. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-green-300"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-green-300"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-green-300"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+// Updated JavaScript to fetch ESG data from Carbon Intensity API
+
+document.addEventListener("DOMContentLoaded", function() {
+    const quickAnalyzeBtn = document.getElementById("quickAnalyzeBtn");
+    const quickClaimInput = document.getElementById("quickClaimInput");
+    const quickAnalysisResults = document.getElementById("quickAnalysisResults");
+    const quickAnalysisContent = document.getElementById("quickAnalysisContent");
+    const quickAnalysisLoader = document.getElementById("quickAnalysisLoader");
+    console.log("Script loaded and event listener is being added.");
+
+    if (quickAnalyzeBtn && quickClaimInput && quickAnalysisResults && quickAnalysisContent && quickAnalysisLoader) {
+        quickAnalyzeBtn.addEventListener("click", async function() {
+            let claimText = quickClaimInput.value.trim(); // Get the input value
+            console.log("Entered text for analysis:", claimText); // Log entered text
+
+            console.log("Quick Analyze button clicked.");
+            quickAnalysisResults.style.display = "block";
+            quickAnalysisLoader.style.display = "block";
+            quickAnalysisContent.innerHTML = "";
+
+            try {
+                console.log("Fetching data from Carbon Intensity API...");
+                const url = `https://api.carbonintensity.org.uk/intensity?company=${claimText}`;
+                console.log('Making API call to:', url);
+                const response = await fetch(url);
+                const data = await response.json();
+                console.log("API Response:", data);
+
+                if (data && data.data && data.data.length > 0) {
+                    const intensity = data.data[0];
+                    console.log("Extracted intensity data:", intensity);
+                    
+                    if (intensity.intensity) {
+                        quickAnalysisContent.innerHTML = `
+                            <h3>Current Carbon Intensity in the UK</h3>
+                            <p><strong>Forecast:</strong> ${intensity.intensity.forecast} gCO2/kWh</p>
+                            <p><strong>Actual:</strong> ${intensity.intensity.actual} gCO2/kWh</p>
+                            <p><strong>Index:</strong> ${intensity.intensity.index}</p>
+                        `;
+                        quickAnalysisResults.style.display = "block";
+                        quickAnalysisResults.style.visibility = "visible";
+                    } else {
+                        quickAnalysisContent.innerHTML = `<p>Unexpected data structure. Check the API response.</p>`;
+                    }
+                } else {
+                    quickAnalysisContent.innerHTML = `<p>No carbon intensity data available.</p>`;
+                }
+            } catch (error) {
+                quickAnalysisContent.innerHTML = `<p>Error fetching data. Please try again.</p>`;
+                console.error("Error fetching Carbon Intensity data:", error);
+            }
+
+            quickAnalysisLoader.style.display = "none";
+        });
+    } else {
+        console.error("One or more elements not found: quickAnalyzeBtn, quickClaimInput, quickAnalysisResults, quickAnalysisContent, quickAnalysisLoader");
+    }
+});
+
+ document.getElementById("quickAnalyzeButton").addEventListener("click", function() {
+            // Simulate analysis process
+            let analysisResult = "Analysis Complete: All checks passed.";
+            console.log(analysisResult); // Ensure logs appear in console
+            
+            // Display result in the Quick Analysis Results section
+            document.getElementById("quickAnalysisResults").innerHTML = "<strong>" + analysisResult + "</strong>";
+        });
+
+</script>
